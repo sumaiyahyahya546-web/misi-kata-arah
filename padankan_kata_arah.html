@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Padankan Kata Arah - Bahasa Melayu Tahun 3</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Font: Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #38bdf8 0%, #3b82f6 50%, #1d4ed8 100%);
+            min-height: 100vh;
+        }
+        .game-card {
+            background: #ffffff;
+            border: 5px solid #facc15;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+        }
+        .option-btn {
+            transition: all 0.2s ease;
+        }
+        .option-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .animate-float {
+            animation: float 2.5s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-3 sm:p-6">
+
+    <div class="w-full max-w-2xl game-card rounded-3xl p-5 sm:p-8 relative overflow-hidden">
+        
+        <!-- Hiasan Belakang Ceria -->
+        <div class="absolute -top-10 -right-10 w-32 h-32 bg-yellow-200 rounded-full opacity-40 pointer-events-none"></div>
+        <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-sky-200 rounded-full opacity-40 pointer-events-none"></div>
+
+        <!-- Skrin 1: Muka Depan -->
+        <div id="start-screen" class="text-center py-4 sm:py-6 relative z-10">
+            <div class="text-6xl sm:text-7xl mb-3 animate-float">🌳🦌🧭</div>
+            <span class="bg-yellow-400 text-yellow-900 text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">Bahasa Melayu Tahun 3</span>
+            <h1 class="text-2xl sm:text-4xl font-extrabold text-blue-900 mt-2 mb-1">Padankan Kata Arah</h1>
+            <p class="text-slate-600 text-sm sm:text-base font-semibold mb-6">Misi Pengembaraan Hutan Sang Kancil & Rakan-rakan</p>
+            
+            <div class="bg-sky-50 border-2 border-sky-200 rounded-2xl p-4 mb-6 text-left max-w-md mx-auto text-slate-700 text-xs sm:text-sm">
+                <p class="font-bold text-blue-900 mb-1">🎯 Arahan Permainan:</p>
+                <ul class="list-disc list-inside space-y-1">
+                    <li>Jawab <strong>10 soalan</strong> tentang kata arah (atas, bawah, dalam, luar, hadapan, belakang, antara).</li>
+                    <li>Fahami situasi gambar dan pilih jawapan yang betul.</li>
+                    <li>Kumpul markah penuh dan jadilah Juara Bijak Bahasa!</li>
+                </ul>
+            </div>
+
+            <button onclick="startGame()" class="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-extrabold text-lg px-8 py-4 rounded-2xl shadow-lg border-b-4 border-green-800 transition active:translate-y-1">
+                Mula Bermain Sekarang! 🚀
+            </button>
+        </div>
+
+        <!-- Skrin 2: Soalan Permainan -->
+        <div id="quiz-screen" class="hidden relative z-10">
+            <!-- Header Soalan -->
+            <div class="flex justify-between items-center mb-4 bg-sky-100 p-3 rounded-2xl border border-sky-300">
+                <span id="question-counter" class="font-bold text-blue-900 text-xs sm:text-sm">Soalan 1 / 10</span>
+                <span id="score-display" class="font-bold text-emerald-700 text-xs sm:text-sm">⭐ Markah: 0</span>
+            </div>
+
+            <!-- Visual / Ilustrasi Emoji Kreatif -->
+            <div class="bg-gradient-to-b from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-4 sm:p-6 mb-4 text-center shadow-inner">
+                <div id="question-visual" class="text-5xl sm:text-6xl mb-2 animate-float">🏡</div>
+                <div id="visual-caption" class="text-xs sm:text-sm font-bold text-amber-900 bg-amber-200/60 py-1 px-3 rounded-full inline-block">Situasi Konteks</div>
+            </div>
+
+            <!-- Teks Soalan -->
+            <div class="mb-5">
+                <h2 id="question-text" class="text-base sm:text-xl font-bold text-slate-900 leading-snug text-center">
+                    Soalan akan dipaparkan di sini...
+                </h2>
+            </div>
+
+            <!-- Pilihan Jawapan -->
+            <div id="options-container" class="space-y-2.5 mb-4">
+                <!-- Dijana secara dinamik -->
+            </div>
+
+            <!-- Kotak Maklum Balas Serta-merta -->
+            <div id="feedback-box" class="hidden p-3 sm:p-4 rounded-2xl font-semibold text-center text-sm sm:text-base mb-4"></div>
+
+            <!-- Butang Seterusnya -->
+            <button id="next-btn" onclick="nextQuestion()" class="hidden w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-2xl shadow-md transition text-sm sm:text-base">
+                Soalan Seterusnya ➡️
+            </button>
+        </div>
+
+        <!-- Skrin 3: Keputusan Akhir -->
+        <div id="result-screen" class="hidden text-center py-4 sm:py-6 relative z-10">
+            <div id="result-emoji" class="text-6xl sm:text-7xl mb-3">🏆</div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-blue-900 mb-1">Tahniah, Misi Selesai!</h2>
+            <p id="result-message" class="text-sm sm:text-base font-bold text-slate-600 mb-5">Anda telah berjaya menyelesaikan semua cabaran kata arah.</p>
+            
+            <div class="bg-yellow-50 border-2 border-yellow-300 rounded-2xl p-5 max-w-xs mx-auto mb-6 shadow-sm">
+                <p class="text-yellow-900 font-semibold text-sm mb-1">Jumlah Markah Anda:</p>
+                <p id="final-score" class="text-4xl sm:text-5xl font-extrabold text-yellow-800">10 / 10</p>
+            </div>
+
+            <button onclick="restartGame()" class="w-full sm:w-auto bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold text-lg px-8 py-4 rounded-2xl shadow-lg border-b-4 border-orange-700 transition active:translate-y-1">
+                Main Semula 🔄
+            </button>
+        </div>
+
+        <!-- Footer Nota DSKP -->
+        <div class="mt-6 text-center text-[11px] sm:text-xs text-slate-400 font-medium">
+            DSKP Bahasa Melayu Tahun 3 • SK 5.1 & SP 5.1.4 (Kata Arah)
+        </div>
+    </div>
+
+    <script>
+        // Bank 10 Soalan Interaktif Kata Arah Tahun 3
+        const questions = [
+            {
+                visual: "🧺🍎",
+                caption: "Bakul dan Buah Epal",
+                question: "Ibu meletakkan sebiji epal merah di ______ bakul rotan itu.",
+                options: ["luar", "dalam", "bawah"],
+                correct: 1, // dalam
+                explanation: "Betul! 'Dalam' digunakan untuk menunjukkan kedudukan di ruang kurungan bakul."
+            },
+            {
+                visual: "🐈📦",
+                caption: "Kucing dan Kotak Mainan",
+                question: "Anak kucing yang comel itu tidur lena di ______ kotak kertas.",
+                options: ["atas", "bawah", "antara"],
+                correct: 0, // atas
+                explanation: "Tepat sekali! 'Atas' merujuk kepada kedudukan di permukaan sesuatu benda."
+            },
+            {
+                visual: "🌳🍄",
+                caption: "Pohon Besar dan Cendawan",
+                question: "Beberapa ketul cendawan tumbuh subur di ______ sebatang pokok meranti.",
+                options: ["hadapan", "bawah", "luar"],
+                correct: 1, // bawah
+                explanation: "Pandai! 'Bawah' merujuk kepada kedudukan di bahagian bawah sesuatu objek."
+            },
+            {
+                visual: "🏫🎒",
+                caption: "Pagar Sekolah dan Murid",
+                question: "Murid-murid berbaris dengan teratur di ______ pintu pagar sekolah sebelum masuk.",
+                options: ["hadapan", "dalam", "atas"],
+                correct: 0, // hadapan
+                explanation: "Hebat! 'Hadapan' ialah kata arah untuk kedudukan yang mendahului sesuatu ruang/pintu."
+            },
+            {
+                visual: "🪑⚽",
+                caption: "Kerusi dan Bola Sepak",
+                question: "Bola sepak milik Amir terpelanting lalu terhenti di ______ dua buah kerusi kayu.",
+                options: ["antara", "atas", "belakang"],
+                correct: 0, // antara
+                explanation: "Syabas! 'Antara' digunakan untuk kedudukan di tengah-tengah dua objek atau lebih."
+            },
+            {
+                visual: "🏡🚲",
+                caption: "Rumah dan Basikal",
+                question: "Abang meletakkan basikalnya di ______ rumah kerana ruang garaj sudah penuh.",
+                options: ["dalam", "luar", "bawah"],
+                correct: 1, // luar
+                explanation: "Betul! 'Luar' menunjukkan kedudukan di sebelah luar ruang dinding rumah."
+            },
+            {
+                visual: "🚪🏃‍♂️",
+                caption: "Pintu Bilik Darjah",
+                question: "Cikgu Siti berdiri di ______ bilik darjah sambil memanggil nama murid.",
+                options: ["hadapan", "belakang", "antara"],
+                correct: 0, // hadapan
+                explanation: "Tepat sekali! 'Hadapan' digunakan untuk kedudukan di muka pintu atau kawasan yang menghadap orang."
+            },
+            {
+                visual: "📚📝",
+                caption: "Buku Tulis dan Meja",
+                question: "Selepas menyiapkan kerja sekolah, Ali menyimpan bukunya di ______ meja tulis.",
+                options: ["atas", "bawah", "luar"],
+                correct: 1, // bawah
+                explanation: "Pandai! Rak laci atau ruang rehat di bahagian bawah meja menggunakan kata arah 'bawah'."
+            },
+            {
+                visual: "🧍‍♂️🌳",
+                caption: "Kanak-kanak dan Pokok Rindang",
+                question: "Abu berdiri di ______ pokok mangga yang rendang itu untuk berteduh daripada panas.",
+                options: ["bawah", "dalam", "hadapan"],
+                correct: 0, // bawah
+                explanation: "Hebat! Kita berteduh di 'bawah' pokok untuk mengelakkan sinaran matahari."
+            },
+            {
+                visual: "🏠🚗",
+                caption: "Rumah dan Kereta Ayah",
+                question: "Kereta Proton Persona ayah diparkir dengan kemas di ______ rumah.",
+                options: ["luar", "antara", "atas"],
+                correct: 0, // luar
+                explanation: "Syabas! Kawasan perkarangan terbuka di luar ruang rumah menggunakan kata arah 'luar'."
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answered = false;
+
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        
+        const questionText = document.getElementById('question-text');
+        const questionVisual = document.getElementById('question-visual');
+        const visualCaption = document.getElementById('visual-caption');
+        const optionsContainer = document.getElementById('options-container');
+        const questionCounter = document.getElementById('question-counter');
+        const scoreDisplay = document.getElementById('score-display');
+        const feedbackBox = document.getElementById('feedback-box');
+        const nextBtn = document.getElementById('next-btn');
+        
+        const finalScore = document.getElementById('final-score');
+        const resultMessage = document.getElementById('result-message');
+        const resultEmoji = document.getElementById('result-emoji');
+
+        function startGame() {
+            currentQuestionIndex = 0;
+            score = 0;
+            startScreen.classList.add('hidden');
+            resultScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            answered = false;
+            feedbackBox.classList.add('hidden');
+            nextBtn.classList.add('hidden');
+            
+            const q = questions[currentQuestionIndex];
+            questionCounter.textContent = `Soalan ${currentQuestionIndex + 1} / ${questions.length}`;
+            scoreDisplay.textContent = `⭐ Markah: ${score}`;
+            questionText.textContent = q.question;
+            questionVisual.textContent = q.visual;
+            visualCaption.textContent = q.caption;
+
+            optionsContainer.innerHTML = '';
+            q.options.forEach((option, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn w-full text-left bg-white border-2 border-sky-300 hover:border-blue-500 text-slate-800 font-bold p-3.5 sm:p-4 rounded-2xl shadow-sm text-sm sm:text-base flex items-center justify-between';
+                btn.innerHTML = `<span>🔹 ${option.toUpperCase()}</span> <span class="text-xs bg-sky-100 text-sky-800 px-2.5 py-1 rounded-lg">Pilih</span>`;
+                btn.onclick = () => selectOption(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function selectOption(selectedIndex, selectedBtn) {
+            if (answered) return;
+            answered = true;
+
+            const q = questions[currentQuestionIndex];
+            const allButtons = optionsContainer.getElementsByTagName('button');
+
+            // Nyahaktifkan semua butang selepas pemilihan
+            for (let btn of allButtons) {
+                btn.disabled = true;
+                btn.classList.add('opacity-75');
+            }
+
+            feedbackBox.classList.remove('hidden');
+
+            if (selectedIndex === q.correct) {
+                score++;
+                scoreDisplay.textContent = `⭐ Markah: ${score}`;
+                selectedBtn.classList.remove('bg-white', 'border-sky-300');
+                selectedBtn.classList.add('bg-emerald-100', 'border-emerald-500', 'text-emerald-900');
+                
+                feedbackBox.className = 'p-3.5 sm:p-4 rounded-2xl font-semibold text-center text-sm sm:text-base mb-4 bg-emerald-100 border-2 border-emerald-400 text-emerald-800';
+                feedbackBox.innerHTML = `✨ <strong>Tahniah! Jawapan Anda Betul.</strong><br><span class="text-xs sm:text-sm font-normal">${q.explanation}</span>`;
+            } else {
+                selectedBtn.classList.remove('bg-white', 'border-sky-300');
+                selectedBtn.classList.add('bg-rose-100', 'border-rose-500', 'text-rose-900');
+                
+                // Serlahkan jawapan betul
+                allButtons[q.correct].classList.remove('bg-white', 'border-sky-300');
+                allButtons[q.correct].classList.add('bg-emerald-100', 'border-emerald-500', 'text-emerald-900');
+
+                feedbackBox.className = 'p-3.5 sm:p-4 rounded-2xl font-semibold text-center text-sm sm:text-base mb-4 bg-rose-100 border-2 border-rose-400 text-rose-800';
+                feedbackBox.innerHTML = `❌ <strong>Kurang Tepat!</strong><br><span class="text-xs sm:text-sm font-normal">${q.explanation}</span>`;
+            }
+
+            if (currentQuestionIndex < questions.length - 1) {
+                nextBtn.textContent = "Soalan Seterusnya ➡️";
+            } else {
+                nextBtn.textContent = "Lihat Keputusan Akhir 🏆";
+            }
+            nextBtn.classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            quizScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            
+            finalScore.textContent = `${score} / ${questions.length}`;
+
+            if (score === 10) {
+                resultEmoji.textContent = "👑💎";
+                resultMessage.textContent = "Cemerlang! Anda ialah Jaguh Kata Arah Sepenuhnya!";
+            } else if (score >= 7) {
+                resultEmoji.textContent = "🎉⭐";
+                resultMessage.textContent = "Hebat! Prestasi yang sangat membanggakan.";
+            } else if (score >= 4) {
+                resultEmoji.textContent = "👍📘";
+                resultMessage.textContent = "Bagus! Teruskan latihan pengukuhan kata arah ya.";
+            } else {
+                resultEmoji.textContent = "🧭💪";
+                resultMessage.textContent = "Jangan putus asa! Cuba lagi untuk skor lebih tinggi.";
+            }
+        }
+
+        function restartGame() {
+            startGame();
+        }
+    </script>
+</body>
+</html>
